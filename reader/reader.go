@@ -1,16 +1,27 @@
 package reader
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Reader struct {
-	Input string
+	words []string
 }
 
 func (r *Reader) Execute(command string) {
-	r.Input = command
 	if command == "" || len(command) > 512 {
 		return
 
 	}
-	fmt.Printf("Received command:%s\n", command)
+
+	fmt.Printf("Received command %s\n", command)
+	r.parse_input(command)
+
+}
+
+func (r *Reader) parse_input(command string) {
+	for _, word := range strings.Fields(command) {
+		r.words = append(r.words, word)
+	}
 }

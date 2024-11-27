@@ -1,17 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"cli_interpreter/reader"
 	"fmt"
+	"os"
 )
 
 func main() {
 	reader := &reader.Reader{}
-	var input string
-	for input != "^V" {
+	scanner := bufio.NewReader(os.Stdin)
+	for {
 		fmt.Print("$")
-		fmt.Scanf("%s", &input)
-		reader.Execute(input)
+		input, err := scanner.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error while reading", err)
+			return
+		}
+		reader.Execute(input[:len(input)-1])
 	}
-
 }
