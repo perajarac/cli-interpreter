@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"bufio"
 	"strings"
 )
 
@@ -34,12 +35,32 @@ var CommandMap = map[string]command_type{
 	"batch":    batch,
 }
 
-func ConvertToEnum(word string) (command_type, bool) {
+func convertToEnum(word string) (command_type, bool) {
 	word = strings.ToLower(word)
 	cmd, found := CommandMap[word]
 	return cmd, found
 }
 
 type Reader struct {
-	words []string
+	words   []string
+	Sign    string
+	Scanner *bufio.Reader
+}
+
+func (r *Reader) check_for_more_arguments() {
+	if len(r.words) == 1 {
+		more_args := r.Read_command()
+		r.parse_input(more_args)
+		return
+	}
+
+	if len(r.words) == 2 && r.words[1][0] == '-' {
+		return //TODO: add checking for arguments instructions and make it more robust
+	}
+}
+
+func (r *Reader) clear() { //TODO: add more stuff if necessary
+	if len(r.words) > 0 {
+		r.words = r.words[:0]
+	}
 }

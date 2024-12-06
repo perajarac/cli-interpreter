@@ -4,23 +4,21 @@ import (
 	"bufio"
 	"cli_interpreter/reader"
 	"fmt"
-	"io"
 	"os"
 )
 
 func main() {
+	reader := &reader.Reader{
+		Sign:    "$",
+		Scanner: bufio.NewReader(os.Stdin),
+	}
+
 	for {
-		reader := &reader.Reader{}
-		scanner := bufio.NewReader(os.Stdin)
-		fmt.Print("$")
-		input, err := scanner.ReadString('\n')
+		fmt.Print(reader.Sign)
+		command := reader.Read_command()
+		err := reader.Execute(command)
 		if err != nil {
-			if err == io.EOF {
-				return
-			}
-			fmt.Println("Error while reading", err)
-			return
+			fmt.Println("Error occured", err)
 		}
-		reader.Execute(input[:len(input)-1])
 	}
 }
