@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var forbbiden_extensions []string = []string{".go", ".exe", ".dll", ".sh"}
+var forbbiden_extensions []string = []string{".go", ".exe", ".dll", ".sh", ".md"}
 
 func does_file_exists(file_name string) bool {
 	_, error := os.Stat(file_name)
