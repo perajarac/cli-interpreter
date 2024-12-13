@@ -64,3 +64,7 @@ func (r *Reader) clear() { //TODO: add more stuff if necessary
 		r.words = r.words[:0]
 	}
 }
+
+func is_zero_arg_command(command command_type) bool {
+	return command == time || command == date
+}

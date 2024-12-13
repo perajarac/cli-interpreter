@@ -1,13 +1,18 @@
 package reader
 
 import (
+	"cli_interpreter/file"
 	"errors"
 	"fmt"
 	"io"
 	"regexp"
+	stdTime "time"
 )
 
 func (r *Reader) Execute(command string) error {
+
+	var err error = nil
+
 	if command == " " || command == "" {
 		return nil
 	}
@@ -17,16 +22,11 @@ func (r *Reader) Execute(command string) error {
 
 	r.parse_input(command)
 
-	// fmt.Println("\t Current state of system: \t", r.words, r.Sign)
-
-	if !r.recognize_command() {
-		r.clear()
-		return errors.New("command unrecognized") //TODO: make generic error
-	}
+	err = r.recognize_command()
 
 	r.clear()
 
-	return nil
+	return err
 }
 
 func (r *Reader) parse_input(command string) {
@@ -40,12 +40,13 @@ func (r *Reader) parse_input(command string) {
 	}
 }
 
-func (r *Reader) recognize_command() bool {
+func (r *Reader) recognize_command() error {
+	var err error
 	command, found := convertToEnum(r.words[0])
 	if !found {
-		return false
+		return errors.New("cannot map command")
 	}
-	if len(r.words) < 2 {
+	if len(r.words) < 2 && !is_zero_arg_command(command) {
 		r.check_for_more_arguments()
 	}
 	switch command {
@@ -53,10 +54,23 @@ func (r *Reader) recognize_command() bool {
 		fmt.Println(r.words[1])
 	case prompt:
 		r.Sign = r.words[1]
+	case time:
+		fmt.Print("System time: ")
+		fmt.Println(stdTime.Now().Clock())
+	case date:
+		fmt.Print("System date: ")
+		fmt.Println(stdTime.Now().Date())
+	case touch:
+		err = file.Handle_touch(r.words[1])
+	case truncate:
+		err = file.Handle_truncate(r.words[1])
+	case rm:
+		err = file.Handle_rm(r.words[1])
 	default:
+		return errors.New("command unrecognized")
 	}
 
-	return true
+	return err
 }
 
 func (r *Reader) Read_command() string {
