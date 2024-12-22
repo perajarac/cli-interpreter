@@ -42,16 +42,27 @@ func (r *Reader) parse_input(command string) {
 
 func (r *Reader) recognize_command() error {
 	var err error
-	command, found := convertToEnum(r.words[0])
+	command, found := convert_to_enum(r.words[0])
 	if !found {
 		return errors.New("cannot map command")
 	}
-	if len(r.words) < 2 && !is_zero_arg_command(command) {
+
+	if is_zero_arg_command(command) {
+		goto check
+	}
+	if len(r.words) < 2 {
 		r.check_for_more_arguments()
 	}
+check:
 	switch command {
 	case echo:
-		fmt.Println(r.words[1])
+		for i := 1; i < len(r.words); i++ {
+			fmt.Print(r.words[i])
+			if i < len(r.words)-1 {
+				fmt.Print(" ")
+			}
+		}
+		fmt.Print("\n")
 	case prompt:
 		r.Sign = r.words[1]
 	case time:
@@ -66,6 +77,12 @@ func (r *Reader) recognize_command() error {
 		err = file.Handle_truncate(r.words[1])
 	case rm:
 		err = file.Handle_rm(r.words[1])
+	case wc:
+		copt, found := convert_command_opt(r.words[1])
+		if !found {
+			return errors.New("unsupported option type")
+		}
+		err = r.handle_wc(copt)
 	default:
 		return errors.New("command unrecognized")
 	}
