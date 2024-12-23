@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
+	"strings"
 	stdTime "time"
 )
 
@@ -13,7 +13,9 @@ func (r *Reader) Execute(command string) error {
 
 	var err error = nil
 
-	if command == " " || command == "" {
+	command = strings.TrimSpace(command) // if
+
+	if command == "" {
 		return nil
 	}
 	if len(command) > 512 {
@@ -21,23 +23,9 @@ func (r *Reader) Execute(command string) error {
 	}
 
 	r.parse_input(command)
-
 	err = r.recognize_command()
 
-	r.clear()
-
 	return err
-}
-
-func (r *Reader) parse_input(command string) {
-	re := regexp.MustCompile(`-[A-Z][a-z]*|\[[^\]]*\]|"[^"]*"|\S+`)
-	matches := re.FindAllString(command, -1)
-	for _, word := range matches {
-		if word[0] == '"' || word[0] == '[' {
-			word = word[1 : len(word)-1]
-		}
-		r.words = append(r.words, word)
-	}
 }
 
 func (r *Reader) recognize_command() error {
@@ -51,6 +39,9 @@ func (r *Reader) recognize_command() error {
 		goto check
 	}
 	if len(r.words) < 2 {
+		if command == wc || command == tr || command == head {
+			return errors.New("invalid instruction f")
+		}
 		r.check_for_more_arguments()
 	}
 check:
