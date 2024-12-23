@@ -13,8 +13,6 @@ func (r *Reader) Execute(command string) error {
 
 	var err error = nil
 
-	fmt.Println(command)
-
 	command = strings.TrimSpace(command) // if
 
 	if command == "" {

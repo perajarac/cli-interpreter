@@ -39,9 +39,10 @@ func listen_for_arrow_keys(channel chan string) {
 
 		switch key {
 		case keyboard.KeyArrowUp:
-			fmt.Println("ovde sam")
+			fmt.Println("Up")
 			channel <- mem.Up()
 		case keyboard.KeyArrowDown:
+			fmt.Println("Down")
 			channel <- mem.Down()
 		default:
 			fmt.Println("ovde sam")
@@ -76,6 +77,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Error occurred:", err)
 		}
+		mem.Push(cmd)
 		clear()
 	}
 
