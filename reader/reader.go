@@ -40,7 +40,7 @@ func (r *Reader) recognize_command() error {
 	}
 	if len(r.words) < 2 {
 		if command == wc || command == tr || command == head {
-			return errors.New("invalid instruction f")
+			return errors.New("invalid instruction format")
 		}
 		r.check_for_more_arguments()
 	}
@@ -74,6 +74,12 @@ check:
 			return errors.New("unsupported option type")
 		}
 		err = r.handle_wc(copt)
+	case tr:
+		err = r.handle_tr()
+	case batch:
+		for _, v := range r.words {
+			fmt.Println(v)
+		}
 	default:
 		return errors.New("command unrecognized")
 	}

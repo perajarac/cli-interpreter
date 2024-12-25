@@ -2,6 +2,7 @@ package reader
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -56,7 +57,37 @@ var command_opt_map = map[string]command_option{
 	"-n": n,
 }
 
+func (r *Reader) batch_helper(command string) []string {
+	words := strings.Fields(command)
+
+	if len(words) == 1 && words[0] == "batch" {
+		return []string{"batch"}
+	}
+
+	allCommands := strings.Join(words[1:], " ")
+	parts := strings.Split(allCommands, ";")
+
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	if words[0] != "batch" && r.words[0] == "batch" {
+		return parts
+	} else if words[0] == "batch" {
+		return append([]string{"batch"}, parts...)
+	}
+
+	return nil
+}
+
 func (r *Reader) parse_input(command string) {
+	temp := r.batch_helper(command)
+
+	r.words = append(r.words, temp...)
+
+	if r.words != nil {
+		return
+	}
+
 	re := regexp.MustCompile(`-[A-Z][a-z]*|\[[^\]]*\]|"[^"]*"|\S+`)
 	matches := re.FindAllString(command, -1)
 	for _, word := range matches {
@@ -80,6 +111,9 @@ func convert_command_opt(word string) (command_option, bool) {
 }
 
 func (r *Reader) check_for_more_arguments() {
+	if r.words[0] == "tr" {
+		return
+	}
 	more_args := r.Read_command()
 	r.parse_input(more_args)
 }
@@ -128,4 +162,22 @@ func (r *Reader) handle_wc(copt command_option) error {
 
 	return nil
 
+}
+
+func (r *Reader) handle_tr() error {
+	if len(r.words) < 3 {
+		return errors.New("to few arguments for tr")
+	}
+
+	if len(r.words) > 4 {
+		return errors.New("put upper commas in arguemnt or separate [argument], with and what with upper commas")
+	}
+
+	if len(r.words) == 3 {
+		fmt.Println(strings.ReplaceAll(r.words[1], r.words[2], ""))
+		return nil
+	}
+	fmt.Println(strings.ReplaceAll(r.words[1], r.words[2], r.words[3]))
+
+	return nil
 }

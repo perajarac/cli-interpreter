@@ -27,7 +27,7 @@ func main() {
 		command := reader.Read_command()
 		err := reader.Execute(command)
 		if err != nil {
-			fmt.Println("Error occured: ", err)
+			fmt.Println("Error occured:", err)
 		}
 		clear()
 		mem.Push(command)
