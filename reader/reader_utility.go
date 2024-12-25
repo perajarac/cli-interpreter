@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const ver = "1.0.0"
+
 type Reader struct {
 	words   []string
 	Sign    string
@@ -35,6 +37,8 @@ const (
 	tr
 	head
 	batch
+	help
+	version
 )
 
 var command_map = map[string]command_type{
@@ -49,6 +53,8 @@ var command_map = map[string]command_type{
 	"tr":       tr,
 	"head":     head,
 	"batch":    batch,
+	"help":     help,
+	"version":  version,
 }
 
 var command_opt_map = map[string]command_option{
@@ -79,14 +85,62 @@ func (r *Reader) batch_helper(command string) []string {
 	return nil
 }
 
+func Version() {
+	fmt.Println(ver)
+}
+
+func Help() {
+	fmt.Println("Available commands:")
+	fmt.Println("1. echo [argument]")
+	fmt.Println("   - Sends the input string directly to the output without any modifications.")
+
+	fmt.Println("2. prompt [argument]")
+	fmt.Println("   - Sets the command prompt to the specified string argument.")
+
+	fmt.Println("3. time")
+	fmt.Println("   - Outputs the current system time.")
+
+	fmt.Println("4. date")
+	fmt.Println("   - Outputs the current system date.")
+
+	fmt.Println("5. touch [filename]")
+	fmt.Println("   - Creates an empty file with the specified filename in the current directory.")
+	fmt.Println("     Outputs an error message if the file already exists.")
+
+	fmt.Println("6. truncate [filename]")
+	fmt.Println("   - Deletes the content of the specified file in the current directory.")
+
+	fmt.Println("7. rm [filename]")
+	fmt.Println("   - Removes the specified file from the file system in the current directory.")
+
+	fmt.Println("8. wc -opt [argument]")
+	fmt.Println("   - Counts words or characters in the input text based on the option.")
+	fmt.Println("     -w for words, -c for characters.")
+
+	fmt.Println("9. tr [argument] what [with]")
+	fmt.Println("   - Replaces all occurrences of the string 'what' with the string 'with' in the input text.")
+	fmt.Println("     If 'with' is not specified, 'what' will be removed.")
+
+	fmt.Println("10. head -ncount [argument]")
+	fmt.Println("    - Outputs the first 'count' lines of the input text.")
+
+	fmt.Println("11. batch [argument]")
+	fmt.Println("    - Interprets multiple command lines from the input as if they were entered one by one in the terminal.")
+
+	fmt.Println("12. help")
+	fmt.Println("    - Displays the documentation for all available commands.")
+	fmt.Println("13. version")
+	fmt.Println("    - Displays the version of the program.")
+}
+
 func (r *Reader) parse_input(command string) {
-	temp := r.batch_helper(command)
+	// temp := r.batch_helper(command) #TODO: change this
 
-	r.words = append(r.words, temp...)
+	// r.words = append(r.words, temp...)
 
-	if r.words != nil {
-		return
-	}
+	// if r.words != nil {
+	// 	return
+	// }
 
 	re := regexp.MustCompile(`-[A-Z][a-z]*|\[[^\]]*\]|"[^"]*"|\S+`)
 	matches := re.FindAllString(command, -1)
@@ -125,7 +179,7 @@ func (r *Reader) Clear() { //TODO: add more stuff if necessary
 }
 
 func is_zero_arg_command(command command_type) bool {
-	return command == time || command == date
+	return command == time || command == date || command == version || command == help
 }
 
 func count_letters(word string) int {

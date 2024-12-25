@@ -76,10 +76,15 @@ check:
 		err = r.handle_wc(copt)
 	case tr:
 		err = r.handle_tr()
-	case batch:
+	case batch: //TODO: make this work
 		for _, v := range r.words {
 			fmt.Println(v)
 		}
+	case help:
+		Help()
+	case version:
+		Version()
+
 	default:
 		return errors.New("command unrecognized")
 	}

@@ -19,6 +19,7 @@ This project is a **simple command-line interface (CLI) interpreter** built to e
 ## Purpose
 
 This project served as a learning exercise to:
+
 1. Understand the language's syntax and semantics.
 2. Practice handling user input and output effectively.
 3. Implement and explore error handling and program control flow.
@@ -29,12 +30,14 @@ This project served as a learning exercise to:
 ## How to Build and Run
 
 1. Clone this repository:
+
    ```bash
    git clone https://github.com/perajarac/cli-interpreter.git
    cd cli-interpreter
    ```
 
 2. Build the project (if applicable):
+
    ```bash
    go build main.go  # Example for Go
    ```
@@ -46,17 +49,12 @@ This project served as a learning exercise to:
 ## Usage Example
 
 ```bash
-> help
-Available commands:
-- help    : Show available commands
-- exit    : Exit the interpreter
-- version : Show interpreter version
+$ echo "perajarac"
+perajarac
 
-> version
+$ version
 CLI Interpreter v1.0
 
-> exit
-Goodbye!
 ```
 
 ---
@@ -68,6 +66,7 @@ cli-interpreter/
 ├── main.go            # Entry point of the program
 ├── reader/            # Module handling user-defined commands and parsing logic
 ├── file/              # Module handling basic file I/O logic
+└── memory/            # Feature tba
 └── README.md          # Project documentation
 ```
 
@@ -90,9 +89,11 @@ cli-interpreter/
 ---
 
 ## License
+
 This project is released under the MIT License.
 
 ---
 
 ## Acknowledgments
+
 Thanks to this project for helping explore language fundamentals in a practical and fun way!
