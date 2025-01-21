@@ -5,90 +5,79 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	stdTime "time"
 )
 
-func (r *Reader) Execute(command string) error {
+func (r *Reader) Execute(command string) (string, error) {
 
 	var err error = nil
+	var ret string = ""
 
 	command = strings.TrimSpace(command) // if
 
 	if command == "" {
-		return nil
+		return ret, nil
 	}
 	if len(command) > 512 {
-		return ErrToLongCommand
+		return ret, ErrToLongCommand
 	}
 
-	r.parse_input(command)
-	err = r.recognize_command()
+	var comm *Command = NewCommand()
+	err = comm.parse_input(command)
+	if err != nil {
+		return ret, err
+	}
+	ret, err = r.recognize_command(comm)
 
-	return err
+	return ret, err
 }
 
-func (r *Reader) recognize_command() error {
-	var err error
-	command, found := convert_to_enum(r.words[0])
-	if !found {
-		return ErrCannotMapCommand
-	}
+func (r *Reader) recognize_command(comm *Command) (string, error) {
+	var err error = nil
+	var ret string = ""
 
-	if is_zero_arg_command(command) {
+	if is_zero_arg_command(comm.ct) {
 		goto check
 	}
-	if len(r.words) < 2 {
-		if command == wc || command == tr || command == head {
-			return ErrInvalidFormat
+	if len(comm.words) < 2 {
+		if comm.ct == wc || comm.ct == tr || comm.ct == head {
+			return ret, ErrInvalidFormat
 		}
-		r.check_for_more_arguments()
+		r.check_for_more_arguments(comm)
 	}
 check:
-	switch command {
+	switch comm.ct {
 	case echo:
-		for i := 1; i < len(r.words); i++ {
-			fmt.Print(r.words[i])
-			if i < len(r.words)-1 {
-				fmt.Print(" ")
-			}
-		}
-		fmt.Print("\n")
+		ret = Echo(comm)
 	case prompt:
-		r.Sign = r.words[1]
+		r.Sign = comm.words[1]
 	case time:
-		fmt.Print("System time: ")
-		fmt.Println(stdTime.Now().Clock())
+		ret = TimeOrDate(time)
 	case date:
-		fmt.Print("System date: ")
-		fmt.Println(stdTime.Now().Date())
+		ret = TimeOrDate(date)
 	case touch:
-		err = file.Handle_touch(r.words[1])
+		err = file.Handle_touch(comm.arg)
 	case truncate:
-		err = file.Handle_truncate(r.words[1])
+		err = file.Handle_truncate(comm.arg)
 	case rm:
-		err = file.Handle_rm(r.words[1])
+		err = file.Handle_rm(comm.arg)
 	case wc:
-		copt, found := convert_command_opt(r.words[1])
-		if !found {
-			return ErrUnsupportedOptionType
-		}
-		ret := r.handle_wc(copt)
+		ret = fmt.Sprintf("%d", r.handle_wc(comm.opt, comm))
 	case tr:
-		ret, err = r.handle_tr()
+		ret, err = r.handle_tr(comm)
 	case batch: //TODO: make this work
-		for _, v := range r.words {
+		for _, v := range comm.words {
 			fmt.Println(v)
 		}
 	case help:
-		Help()
+		ret = Help()
 	case version:
-		Version()
+		ret = Version()
 
 	default:
-		return ErrCannotMapCommand
+		return ret, ErrCannotMapCommand
 	}
 
-	return err
+	return ret, err
 }
 
 func (r *Reader) Read_command() string {
@@ -107,9 +96,10 @@ func (r *Reader) Read_command() string {
 func (r *Reader) MainLoop() {
 	fmt.Print(r.Sign)
 	command := r.Read_command()
-	err := r.Execute(command)
+	ret, err := r.Execute(command)
 	if err != nil {
 		fmt.Println("Error occured: ", err)
 	}
+	fmt.Print(ret)
 	r.Clear()
 }
