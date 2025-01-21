@@ -2,7 +2,6 @@ package reader
 
 import (
 	"cli_interpreter/file"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -19,7 +18,7 @@ func (r *Reader) Execute(command string) error {
 		return nil
 	}
 	if len(command) > 512 {
-		return errors.New("command is longer than 512 characters")
+		return ErrToLongCommand
 	}
 
 	r.parse_input(command)
@@ -32,7 +31,7 @@ func (r *Reader) recognize_command() error {
 	var err error
 	command, found := convert_to_enum(r.words[0])
 	if !found {
-		return errors.New("cannot map command")
+		return ErrCannotMapCommand
 	}
 
 	if is_zero_arg_command(command) {
@@ -40,7 +39,7 @@ func (r *Reader) recognize_command() error {
 	}
 	if len(r.words) < 2 {
 		if command == wc || command == tr || command == head {
-			return errors.New("invalid instruction format")
+			return ErrInvalidFormat
 		}
 		r.check_for_more_arguments()
 	}
@@ -71,11 +70,11 @@ check:
 	case wc:
 		copt, found := convert_command_opt(r.words[1])
 		if !found {
-			return errors.New("unsupported option type")
+			return ErrUnsupportedOptionType
 		}
-		err = r.handle_wc(copt)
+		ret := r.handle_wc(copt)
 	case tr:
-		err = r.handle_tr()
+		ret, err = r.handle_tr()
 	case batch: //TODO: make this work
 		for _, v := range r.words {
 			fmt.Println(v)
@@ -86,7 +85,7 @@ check:
 		Version()
 
 	default:
-		return errors.New("command unrecognized")
+		return ErrCannotMapCommand
 	}
 
 	return err
@@ -103,4 +102,14 @@ func (r *Reader) Read_command() string {
 	}
 
 	return input[:len(input)-1]
+}
+
+func (r *Reader) MainLoop() {
+	fmt.Print(r.Sign)
+	command := r.Read_command()
+	err := r.Execute(command)
+	if err != nil {
+		fmt.Println("Error occured: ", err)
+	}
+	r.Clear()
 }

@@ -2,8 +2,9 @@ package reader
 
 import (
 	"bufio"
-	"errors"
+	"cli_interpreter/memory"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -14,6 +15,15 @@ type Reader struct {
 	words   []string
 	Sign    string
 	Scanner *bufio.Reader
+	Memmory *memory.Memory
+}
+
+func NewReader() *Reader {
+	return &Reader{
+		Sign:    "$",
+		Scanner: bufio.NewReader(os.Stdin),
+		Memmory: memory.New(),
+	}
 }
 
 type command_type int
@@ -176,6 +186,7 @@ func (r *Reader) Clear() { //TODO: add more stuff if necessary
 	if len(r.words) > 0 {
 		r.words = r.words[:0]
 	}
+	r.Memmory.Clear()
 }
 
 func is_zero_arg_command(command command_type) bool {
@@ -191,7 +202,7 @@ func count_words(sentence string) int {
 	return len(words)
 }
 
-func (r *Reader) handle_wc(copt command_option) error {
+func (r *Reader) handle_wc(copt command_option) int {
 	if len(r.words) < 3 {
 		r.check_for_more_arguments()
 	}
@@ -208,30 +219,25 @@ func (r *Reader) handle_wc(copt command_option) error {
 		}
 	}
 
-	if copt == w {
-		fmt.Println("Number of words: ", ret)
-	} else {
-		fmt.Println("Number of letters: ", ret)
-	}
-
-	return nil
+	return ret
 
 }
 
-func (r *Reader) handle_tr() error {
+func (r *Reader) handle_tr() (string, error) {
+	var ret string = " "
 	if len(r.words) < 3 {
-		return errors.New("to few arguments for tr")
+		return ret, ErrToFewArgs
 	}
 
 	if len(r.words) > 4 {
-		return errors.New("put upper commas in arguemnt or separate [argument], with and what with upper commas")
+		return ret, ErrInvalidFormat
 	}
 
 	if len(r.words) == 3 {
-		fmt.Println(strings.ReplaceAll(r.words[1], r.words[2], ""))
-		return nil
+		ret = strings.ReplaceAll(r.words[1], r.words[2], "")
+		return ret, nil
 	}
-	fmt.Println(strings.ReplaceAll(r.words[1], r.words[2], r.words[3]))
+	ret = strings.ReplaceAll(r.words[1], r.words[2], r.words[3])
 
-	return nil
+	return ret, nil
 }
