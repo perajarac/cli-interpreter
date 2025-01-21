@@ -1,7 +1,82 @@
 package main
 
-import "testing"
+import (
+	r "cli_interpreter/reader"
+	"strings"
+	"testing"
+)
+
+var reader_test *r.Reader = r.NewReader()
+
+const helpText string = `Available commands:
+	1. echo [argument]
+	   - Sends the input string directly to the output without any modifications.
+	
+	2. prompt [argument]
+	   - Sets the command prompt to the specified string argument.
+	
+	3. time
+	   - Outputs the current system time.
+	
+	4. date
+	   - Outputs the current system date.
+	
+	5. touch [filename]
+	   - Creates an empty file with the specified filename in the current directory.
+		 Outputs an error message if the file already exists.
+	
+	6. truncate [filename]
+	   - Deletes the content of the specified file in the current directory.
+	
+	7. rm [filename]
+	   - Removes the specified file from the file system in the current directory.
+	
+	8. wc -opt [argument]
+	   - Counts words or characters in the input text based on the option.
+		 -w for words, -c for characters.
+	
+	9. tr [argument] what [with]
+	   - Replaces all occurrences of the string 'what' with the string 'with' in the input text.
+		 If 'with' is not specified, 'what' will be removed.
+	
+	10. head -ncount [argument]
+		- Outputs the first 'count' lines of the input text.
+	
+	11. batch [argument]
+		- Interprets multiple command lines from the input as if they were entered one by one in the terminal.
+	
+	12. help
+		- Displays the documentation for all available commands.
+	
+	13. version
+		- Displays the version of the program.`
 
 func TestValidateCLI(t *testing.T) {
-
+	tests := []struct {
+		command  string
+		wantErr  error
+		expected string
+	}{
+		{"echo PeraJarac", nil, "PeraJarac"},
+		{"echo Pera Jarac", nil, "Pera Jarac"},
+		{"prompt %", nil, ""},
+		{"time", nil, r.TimeOrDate(3)},
+		{"date", nil, r.TimeOrDate(4)},
+		{"touch pera.txt", nil, ""},
+		{"truncate pera.txt", nil, ""},
+		{"rm pera.txt", nil, ""},
+		{"wc -c Pera", nil, "4"},
+		{"wc -w Pera", nil, "1"},
+		{"wc -w \"Pera jarac\"", nil, "2"},
+		{"tr \"Bleja je lepa\" lepa bleja", nil, "Bleja je bleja"},
+		{"help", nil, helpText},
+		{"version", nil, r.Ver},
+	}
+	for _, tt := range tests {
+		ret, err := reader_test.Execute(tt.command)
+		ret = strings.TrimSuffix(ret, "\n")
+		if ((err != nil) && err != tt.wantErr) || (ret != tt.expected) {
+			t.Errorf("Error occured: command = %v output = %v, expected = %v, error = %v, wantErr = %v", tt.command, ret, tt.expected, err, tt.wantErr)
+		}
+	}
 }

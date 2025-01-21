@@ -10,7 +10,7 @@ import (
 	stdTime "time"
 )
 
-const ver = "1.0.0"
+const Ver = "1.0.1"
 
 type Reader struct {
 	Sign    string
@@ -112,7 +112,7 @@ var command_opt_map = map[string]command_option{
 // }
 
 func Version() string {
-	return ver
+	return Ver
 }
 
 func Help() string {
@@ -279,8 +279,6 @@ func Echo(c *Command) string {
 			ret = ret + " "
 		}
 	}
-	ret += "\n"
-
 	return ret
 }
 
@@ -296,6 +294,6 @@ func TimeOrDate(ct command_type) string {
 		first, second, third := stdTime.Now().Date()
 		timeString = fmt.Sprintf("%02d:%02d:%02d", first, second, third)
 	}
-	ret = ret + timeString + "\n"
+	ret = ret + timeString
 	return ret
 }

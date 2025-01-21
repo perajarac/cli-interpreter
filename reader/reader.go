@@ -100,6 +100,6 @@ func (r *Reader) MainLoop() {
 	if err != nil {
 		fmt.Println("Error occured: ", err)
 	}
-	fmt.Print(ret)
+	fmt.Println(ret)
 	r.Clear()
 }
