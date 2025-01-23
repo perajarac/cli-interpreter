@@ -1,36 +1,21 @@
 package reader
 
 import (
-	"bufio"
-	"cli_interpreter/memory"
+	"cli_interpreter/file"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	stdTime "time"
+	"unicode/utf8"
 )
 
 const Ver = "1.0.1"
-
-type Reader struct {
-	Sign    string
-	Scanner *bufio.Reader
-	Memmory *memory.Memory
-}
 
 type Command struct {
 	words []string
 	ct    command_type
 	opt   command_option
 	arg   string
-}
-
-func NewReader() *Reader {
-	return &Reader{
-		Sign:    "$",
-		Scanner: bufio.NewReader(os.Stdin),
-		Memmory: memory.New(),
-	}
 }
 
 func NewCommand() *Command {
@@ -44,7 +29,7 @@ type command_type int
 type command_option int
 
 const (
-	unkct command_option = iota
+	unkco command_option = iota
 	w
 	c
 	n
@@ -88,34 +73,14 @@ var command_opt_map = map[string]command_option{
 	"-n": n,
 }
 
-// TODO: make this work
-// func (r *Reader) batch_helper(command string) []string {
-// 	words := strings.Fields(command)
-
-// 	if len(words) == 1 && words[0] == "batch" {
-// 		return []string{"batch"}
-// 	}
-
-// 	allCommands := strings.Join(words[1:], " ")
-// 	parts := strings.Split(allCommands, ";")
-
-// 	for i := range parts {
-// 		parts[i] = strings.TrimSpace(parts[i])
-// 	}
-// 	if words[0] != "batch" && r.words[0] == "batch" {
-// 		return parts
-// 	} else if words[0] == "batch" {
-// 		return append([]string{"batch"}, parts...)
-// 	}
-
-// 	return nil
-// }
-
-func Version() string {
+func Version(sentence string) string {
+	if sentence != "" {
+		return sentence + " " + Ver
+	}
 	return Ver
 }
 
-func Help() string {
+func Help(sentence string) string {
 	helpText := `Available commands:
 	1. echo [argument]
 	   - Sends the input string directly to the output without any modifications.
@@ -159,20 +124,19 @@ func Help() string {
 	13. version
 		- Displays the version of the program.`
 
+	if sentence != "" {
+		return sentence + " " + helpText
+	}
 	return helpText
 }
 
 // function that fills all fields of c *Command
-func (c *Command) parse_input(command string) error {
+func (c *Command) parseInput(command string) error {
 	re := regexp.MustCompile(`-[A-Z][a-z]*|\[[^\]]*\]|"[^"]*"|\S+`)
 	var found bool
 	matches := re.FindAllString(command, -1)
-	for _, word := range matches {
-		if word[0] == '"' || word[0] == '[' {
-			word = word[1 : len(word)-1]
-		}
-		c.words = append(c.words, word)
-	}
+
+	c.words = append(c.words, matches...)
 	c.ct, found = getCommandType(c.words[0])
 	if !found {
 		return ErrCannotMapCommand
@@ -184,10 +148,10 @@ func (c *Command) parse_input(command string) error {
 				return ErrUnsupportedOptionType
 			}
 		}
-		if c.opt == unkct { //for commands with no optional flag
-			c.arg = strings.Join(c.words[1:], " ")
+		if c.opt == unkco { //for commands with no optional flag
+			c.arg = c.arg + strings.Join(c.words[1:], " ")
 		} else {
-			c.arg = strings.Join(c.words[2:], " ")
+			c.arg = c.arg + strings.Join(c.words[2:], " ")
 		}
 	}
 
@@ -206,94 +170,171 @@ func getCommandOpt(word string) (command_option, bool) {
 	return cmd, found
 }
 
-func (r *Reader) check_for_more_arguments(c *Command) {
-	if c.words[0] == "tr" {
+func (r *Reader) checkForMoreArgs(c *Command) {
+	if c.ct == tr {
 		return
 	}
-	more_args := r.Read_command()
-	c.parse_input(more_args)
+	more_args := r.ReadCommand()
+	c.parseInput(more_args)
 }
 
 func (r *Reader) Clear() { //TODO: add more stuff if necessary
 	r.Memmory.Clear()
 }
 
-func is_zero_arg_command(command command_type) bool {
+func isZeroArg(command command_type) bool {
 	return command == time || command == date || command == version || command == help
 }
 
-func count_letters(word string) int {
-	return len(word)
+func countLetters(sentence string) int {
+	return utf8.RuneCountInString(sentence)
 }
 
-func count_words(sentence string) int {
+func countWords(sentence string) int {
 	words := strings.Fields(sentence)
 	return len(words)
 }
 
-func (r *Reader) handle_wc(copt command_option, comm *Command) int {
-	if len(comm.words) < 3 {
-		r.check_for_more_arguments(comm)
+func (r *Reader) HandleWc(copt command_option, comm *Command) (int, error) {
+	if comm.opt == unkco {
+		return 0, ErrInvalidFormat
+	}
+	comm.arg = strings.ReplaceAll(comm.arg, `"`, "")
+	if comm.arg == "" {
+		r.checkForMoreArgs(comm)
 	}
 	var ret int = 0
 
-	for i := 2; i < len(comm.words); i++ {
-		if i >= 3 && copt == c {
-			ret += 1
-		}
-		if copt == w {
-			ret += count_words(comm.words[i])
-		} else {
-			ret += count_letters(comm.words[i])
-		}
+	if copt == w {
+		ret = countWords(comm.arg)
+	} else {
+		ret = countLetters(comm.arg)
 	}
 
-	return ret
+	return ret, nil
 
 }
 
-func (r *Reader) handle_tr(c *Command) (string, error) {
-	var ret string = " "
-	if len(c.words) < 3 {
-		return ret, ErrToFewArgs
-	}
+func (r *Reader) HandleTr(c *Command) (string, error) {
+	reg := regexp.MustCompile(`"([^"]*)"`)
+	matches := reg.FindAllString(c.arg, -1)
 
-	if len(c.words) > 4 {
-		return ret, ErrInvalidFormat
+	if len(matches) < 2 {
+		return "", ErrInvalidFormat
 	}
+	var ret string = ""
 
-	if len(c.words) == 3 {
-		ret = strings.ReplaceAll(c.words[1], c.words[2], "")
-		return ret, nil
+	if len(matches) == 2 {
+		ret = strings.ReplaceAll(matches[0], strings.Trim(matches[1], `"`), "")
+	} else {
+		ret = strings.ReplaceAll(matches[0], strings.Trim(matches[1], `"`), strings.Trim(matches[2], `"`))
 	}
-	ret = strings.ReplaceAll(c.words[1], c.words[2], c.words[3])
 
 	return ret, nil
 }
 
 func Echo(c *Command) string {
-	var ret string
-	for i := 1; i < len(c.words); i++ {
-		ret = ret + c.words[i]
-		if i < len(c.words)-1 {
-			ret = ret + " "
-		}
-	}
-	return ret
+	return c.arg
 }
 
 func TimeOrDate(ct command_type) string {
 	var ret string
 	var timeString string
 	if ct == time {
-		ret = ret + "System time: "
 		first, second, third := stdTime.Now().Clock()
 		timeString = fmt.Sprintf("%02d:%02d:%02d", first, second, third)
 	} else {
-		ret = ret + "System date: "
 		first, second, third := stdTime.Now().Date()
 		timeString = fmt.Sprintf("%02d:%02d:%02d", first, second, third)
 	}
 	ret = ret + timeString
 	return ret
+}
+
+func (r *Reader) handlePipes(cmd string) (string, error) {
+	commands := strings.Split(cmd, "|")
+	var last string
+	var err error
+
+	for _, comm := range commands {
+		command := strings.TrimSpace(comm)
+		if command == "" {
+			return "", nil
+		}
+		if len(command) > 512 {
+			return "", ErrToLongCommand
+		}
+
+		commObj := NewCommand()
+		commObj.arg = last
+		err = commObj.parseInput(command)
+		if err != nil {
+			return "", err
+		}
+		last, err = r.recognizeCommand(commObj)
+		if err != nil {
+			return "", err
+		}
+		last = "\"" + last + "\""
+	}
+	return strings.Trim(last, `"`), nil
+}
+
+func (r *Reader) handleSimpleCmd(cmd string) (string, error) {
+	commObj := NewCommand()
+	err := commObj.parseInput(cmd)
+	if err != nil {
+		return "", err
+	}
+	ret, err := r.recognizeCommand(commObj)
+	ret = strings.Trim(ret, `"`)
+
+	return ret, err
+}
+
+func (r *Reader) recognizeCommand(comm *Command) (string, error) {
+	var err error = nil
+	var ret string = ""
+
+	if comm.arg == "" && !isZeroArg(comm.ct) {
+		if comm.ct == wc || comm.ct == tr || comm.ct == head {
+			return ret, ErrInvalidFormat
+		}
+		r.checkForMoreArgs(comm)
+	}
+	switch comm.ct {
+	case echo:
+		ret = Echo(comm)
+	case prompt:
+		r.Sign = comm.arg
+	case time:
+		ret = TimeOrDate(time)
+	case date:
+		ret = TimeOrDate(date)
+	case touch:
+		err = file.HandleTouch(comm.arg)
+	case truncate:
+		err = file.HandleTruncate(comm.arg)
+	case rm:
+		err = file.HandleRm(comm.arg)
+	case wc:
+		var temp int
+		temp, err = r.HandleWc(comm.opt, comm)
+		ret = fmt.Sprintf("%d", temp)
+	case tr:
+		ret, err = r.HandleTr(comm)
+	case batch: //TODO: make this work
+		for _, v := range comm.words {
+			fmt.Println(v)
+		}
+	case help:
+		ret = Help(comm.arg)
+	case version:
+		ret = Version(comm.arg)
+
+	default:
+		return ret, ErrCannotMapCommand
+	}
+
+	return ret, err
 }

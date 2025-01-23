@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func Handle_touch(file_name string) error {
+func HandleTouch(file_name string) error {
 	var exists bool = does_file_exists(file_name)
 
 	if exists {
@@ -19,7 +19,7 @@ func Handle_touch(file_name string) error {
 	return nil
 }
 
-func Handle_truncate(file_name string) error {
+func HandleTruncate(file_name string) error {
 	var exists bool = does_file_exists(file_name)
 
 	if !exists {
@@ -42,7 +42,7 @@ func Handle_truncate(file_name string) error {
 
 }
 
-func Handle_rm(file_name string) error {
+func HandleRm(file_name string) error {
 	var exists bool = does_file_exists(file_name)
 
 	if !exists {

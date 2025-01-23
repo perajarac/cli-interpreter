@@ -68,12 +68,19 @@ func TestValidateCLI(t *testing.T) {
 		{"wc -c Pera", nil, "4"},
 		{"wc -w Pera", nil, "1"},
 		{"wc -w \"Pera jarac\"", nil, "2"},
-		{"tr \"Bleja je lepa\" lepa bleja", nil, "Bleja je bleja"},
+		{"tr \"Bleja je lepa\" \"lepa\" \"bleja\"", nil, "Bleja je bleja"},
 		{"help", nil, helpText},
 		{"version", nil, r.Ver},
+		{"version | tr \".\"", nil, "101"},
+		{"version | echo", nil, "1.0.1"},
+		{"echo \"hello\" | wc -w | tr \"1\" \"one\"", nil, "one"},
+		{"echo \"hello world\" | wc -c | tr \"11\" \"eleven\"", nil, "eleven"},
+		{"echo \"sample text\" | tr \"sample\" \"example\" | wc -w", nil, "2"},
+		{"echo \"test\" | tr \"t\" \"T\" | wc -c", nil, "4"},
+		{"echo \"pipe test\" | wc -w | wc -c", nil, "1"},
 	}
 	for _, tt := range tests {
-		ret, err := reader_test.Execute(tt.command)
+		ret, err := reader_test.RunCommand(tt.command)
 		ret = strings.TrimSuffix(ret, "\n")
 		if ((err != nil) && err != tt.wantErr) || (ret != tt.expected) {
 			t.Errorf("Error occured: command = %v output = %v, expected = %v, error = %v, wantErr = %v", tt.command, ret, tt.expected, err, tt.wantErr)
