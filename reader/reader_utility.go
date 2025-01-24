@@ -183,7 +183,7 @@ func (r *Reader) Clear() { //TODO: add more stuff if necessary
 }
 
 func isZeroArg(command command_type) bool {
-	return command == time || command == date || command == version || command == help
+	return command == time || command == date || command == version || command == help || command == echo
 }
 
 func countLetters(sentence string) int {
@@ -234,7 +234,7 @@ func (r *Reader) HandleTr(c *Command) (string, error) {
 }
 
 func Echo(c *Command) string {
-	return c.arg
+	return strings.Trim(c.arg, "\"")
 }
 
 func TimeOrDate(ct command_type) string {
@@ -323,7 +323,7 @@ func (r *Reader) recognizeCommand(comm *Command) (string, error) {
 		ret = fmt.Sprintf("%d", temp)
 	case tr:
 		ret, err = r.HandleTr(comm)
-	case batch: //TODO: make this work
+	case batch: //TODO:make this work
 		for _, v := range comm.words {
 			fmt.Println(v)
 		}
