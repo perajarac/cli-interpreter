@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-const Ver = "1.0.1"
+const Ver = "1.0.2"
 
 type Command struct {
 	words  []string
@@ -144,11 +144,12 @@ func (c *Command) parseInput(command string) error {
 		return ErrCannotMapCommand
 	}
 
+	var err error
+
 	c.checkOutputPath()
 
 	//check if command has file(< or basic file.txt) as a argument if has, argument becomes all file content
 	var file_content string
-	var err error
 	c.words, file_content, err = file.CheckArgument(c.words)
 	if err != nil {
 		return err
@@ -235,7 +236,7 @@ func (r *Reader) HandleTr(c *Command) (string, error) {
 	reg := regexp.MustCompile(`"([^"]*)"`)
 	matches := reg.FindAllString(c.arg, -1)
 
-	if len(matches) < 2 {
+	if len(matches) < 2 || len(matches) > 3 {
 		return "", ErrInvalidFormat
 	}
 	var ret string = ""

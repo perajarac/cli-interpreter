@@ -29,7 +29,7 @@ func readFromFile(fileName string) (string, error) {
 }
 
 func WriteOutput(outputFile string, fileContent string) error {
-	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return ErrCannotCreateFile
 	}
@@ -57,20 +57,24 @@ func CheckArgument(words []string) ([]string, string, error) {
 	if words[0] == "prompt" || words[0] == "touch" || words[0] == "truncate" || words[0] == "rm" {
 		return words, "", nil
 	}
+	var arg string
+	var err error
+
 	for i, word := range words[1:] {
 
 		if strings.Contains(word, "\"") || word[0] == '>' || word[0] == '-' {
 			continue
 		}
-		words = RemoveAtIndex(words, i)
+		words = RemoveAtIndex(words, i+1)
 		word = strings.ReplaceAll(word, "<", "")
-		arg, err := readFromFile(word)
+		arg, err = readFromFile(word)
+		arg = `"` + arg + `"`
 		if err != nil {
 			return words, "", ErrFileDoesNotExist
 		}
-		return words, arg, nil
+
 	}
-	return words, "", nil
+	return words, arg, nil
 }
 
 func RemoveAtIndex(s []string, i int) []string {
