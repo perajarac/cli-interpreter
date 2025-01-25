@@ -12,16 +12,18 @@ import (
 const Ver = "1.0.1"
 
 type Command struct {
-	words []string
-	ct    command_type
-	opt   command_option
-	arg   string
+	words  []string
+	ct     command_type
+	opt    command_option
+	arg    string
+	output string
 }
 
 func NewCommand() *Command {
 	return &Command{
-		words: []string{},
-		arg:   "",
+		words:  []string{},
+		arg:    "",
+		output: "",
 	}
 }
 
@@ -141,6 +143,8 @@ func (c *Command) parseInput(command string) error {
 	if !found {
 		return ErrCannotMapCommand
 	}
+
+	c.checkOutputPath()
 
 	//check if command has file(< or basic file.txt) as a argument if has, argument becomes all file content
 	var file_content string
@@ -287,6 +291,14 @@ func (r *Reader) handlePipes(cmd string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if commObj.output != "" {
+			err = file.WriteOutput(commObj.output, last)
+			if err != nil {
+				return "", err
+			}
+			last = ""
+			continue
+		}
 		last = "\"" + last + "\""
 	}
 	return strings.Trim(last, `"`), nil
@@ -299,9 +311,20 @@ func (r *Reader) handleSimpleCmd(cmd string) (string, error) {
 		return "", err
 	}
 	ret, err := r.recognizeCommand(commObj)
+	if err != nil {
+		return "", err
+	}
 	ret = strings.Trim(ret, `"`)
 
-	return ret, err
+	if commObj.output != "" {
+		err = file.WriteOutput(commObj.output, ret)
+		if err != nil {
+			return "", err
+		}
+		ret = ""
+	}
+
+	return ret, nil
 }
 
 func (r *Reader) recognizeCommand(comm *Command) (string, error) {
@@ -351,4 +374,12 @@ func (r *Reader) recognizeCommand(comm *Command) (string, error) {
 	return ret, err
 }
 
-func writeOutput
+func (cmd *Command) checkOutputPath() {
+	index := len(cmd.words) - 1
+	if index > 0 {
+		if cmd.words[index][0] == '>' {
+			cmd.output = strings.ReplaceAll(cmd.words[index], ">", "")
+			cmd.words = file.RemoveAtIndex(cmd.words, index)
+		}
+	}
+}
