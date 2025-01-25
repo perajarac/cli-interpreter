@@ -55,11 +55,11 @@ perajarac
 time | tr ":" "." | wc -c >time.txt
 8
 ```
-<sup><sup>The output stream of the first command time is bound to the input stream of the second command tr, so that all characters
+
+<sup>Explanation: The output stream of the first command time is bound to the input stream of the second command tr, so that all characters
 that this command outputs to its output stream is received by the second tr command to its input stream. This one
 the second command replaces the ':' character with the '.' character, and the transformed text is received by the third command
-wc to your entrance. It again counts all the characters in that text and writes the result to a file<\sup><\sup>
-time.txt
+wc to your entrance. It again counts all the characters in that text and writes the result to a file time.txt. <\sup>
 
 ```bash
 $ version
