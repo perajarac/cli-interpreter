@@ -13,6 +13,7 @@ type Reader struct {
 	Sign    string
 	Scanner *bufio.Reader
 	Memmory *memory.Memory
+	output  bool
 }
 
 func NewReader() *Reader {
@@ -20,6 +21,7 @@ func NewReader() *Reader {
 		Sign:    "$",
 		Scanner: bufio.NewReader(os.Stdin),
 		Memmory: memory.New(),
+		output:  false,
 	}
 }
 
@@ -34,8 +36,10 @@ func (r *Reader) MainLoop() {
 	if err != nil {
 		fmt.Println("Error occured: ", err)
 	}
-	if ret != "" {
+	if ret != "" || r.output != false {
 		fmt.Println(ret)
+	} else {
+		writeOutput(ret)
 	}
 	r.Clear()
 }

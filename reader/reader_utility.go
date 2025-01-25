@@ -132,7 +132,7 @@ func Help(sentence string) string {
 
 // function that fills all fields of c *Command
 func (c *Command) parseInput(command string) error {
-	re := regexp.MustCompile(`-[A-Z][a-z]*|\[[^\]]*\]|"[^"]*"|\S+`)
+	re := regexp.MustCompile(`-[A-Z][a-z]*|"[^"]*"|\S+`)
 	var found bool
 	matches := re.FindAllString(command, -1)
 
@@ -141,7 +141,19 @@ func (c *Command) parseInput(command string) error {
 	if !found {
 		return ErrCannotMapCommand
 	}
+
+	//check if command has file(< or basic file.txt) as a argument if has, argument becomes all file content
+	var file_content string
+	var err error
+	c.words, file_content, err = file.CheckArgument(c.words)
+	if err != nil {
+		return err
+	}
+
+	c.arg = c.arg + file_content
+
 	if len(c.words) > 1 {
+		//if command has flag
 		if len(c.words[1]) > 0 && c.words[1][0] == '-' {
 			c.opt, found = getCommandOpt(c.words[1])
 			if !found {
@@ -234,7 +246,7 @@ func (r *Reader) HandleTr(c *Command) (string, error) {
 }
 
 func Echo(c *Command) string {
-	return strings.Trim(c.arg, "\"")
+	return strings.ReplaceAll(c.arg, `"`, "")
 }
 
 func TimeOrDate(ct command_type) string {
@@ -338,3 +350,5 @@ func (r *Reader) recognizeCommand(comm *Command) (string, error) {
 
 	return ret, err
 }
+
+func writeOutput

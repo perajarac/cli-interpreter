@@ -1,6 +1,7 @@
 package main
 
 import (
+	f "cli_interpreter/file"
 	r "cli_interpreter/reader"
 	"strings"
 	"testing"
@@ -57,16 +58,18 @@ func TestValidateCLI(t *testing.T) {
 		wantErr  error
 		expected string
 	}{
-		{"echo PeraJarac", nil, "PeraJarac"},
-		{"echo Pera Jarac", nil, "Pera Jarac"},
+		{"echo PeraJarac", f.ErrFileDoesNotExist, ""},
+		{"echo Pera Jarac", f.ErrFileDoesNotExist, ""},
+		{"echo \"PeraJarac\"", nil, "PeraJarac"},
+		{"echo \"Pera Jarac\"", nil, "Pera Jarac"},
 		{"prompt %", nil, ""},
 		{"time", nil, r.TimeOrDate(3)},
 		{"date", nil, r.TimeOrDate(4)},
 		{"touch pera.txt", nil, ""},
 		{"truncate pera.txt", nil, ""},
 		{"rm pera.txt", nil, ""},
-		{"wc -c Pera", nil, "4"},
-		{"wc -w Pera", nil, "1"},
+		{"wc -c \"Pera\"", nil, "4"},
+		{"wc -w \"Pera\"", nil, "1"},
 		{"wc -w \"Pera jarac\"", nil, "2"},
 		{"tr \"Bleja je lepa\" \"lepa\" \"bleja\"", nil, "Bleja je bleja"},
 		{"help", nil, helpText},

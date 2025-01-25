@@ -8,13 +8,27 @@ import (
 
 var forbbiden_extensions []string = []string{".go", ".exe", ".dll", ".sh", ".md"}
 
-func does_file_exists(file_name string) bool {
+func doesFileExists(file_name string) bool {
 	_, error := os.Stat(file_name)
 	return !os.IsNotExist(error)
 
 }
 
-func is_forbbiden(file_path string) bool {
+func readFromFile(fileName string) (string, error) {
+	exists := doesFileExists(fileName)
+	if !exists {
+		return "", ErrFileDoesNotExist
+	}
+
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+func isForbidden(file_path string) bool {
 	extension := strings.ToLower(filepath.Ext(file_path))
 	for _, ext := range forbbiden_extensions {
 		if extension == ext {
@@ -22,4 +36,31 @@ func is_forbbiden(file_path string) bool {
 		}
 	}
 	return false
+}
+
+func CheckArgument(words []string) ([]string, string, error) {
+	if words[0] == "prompt" || words[0] == "touch" || words[0] == "truncate" || words[0] == "rm" {
+		return words, "", nil
+	}
+	for i, word := range words[1:] {
+
+		if strings.Contains(word, "\"") || word[0] == '>' || word[0] == '-' {
+			continue
+		}
+		words = removeAtIndex(words, i)
+		word = strings.ReplaceAll(word, "<", "")
+		arg, err := readFromFile(word)
+		if err != nil {
+			return words, "", ErrFileDoesNotExist
+		}
+		return words, arg, nil
+	}
+	return words, "", nil
+}
+
+func removeAtIndex(s []string, i int) []string {
+	if i < 0 || i >= len(s) {
+		return s
+	}
+	return append(s[:i], s[i+1:]...)
 }
