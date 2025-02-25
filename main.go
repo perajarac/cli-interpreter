@@ -1,7 +1,7 @@
 package main
 
 import (
-	read "github.com/perajarac/cli_interpreter/reader"
+	read "github.com/perajarac/cli-interpreter/reader"
 )
 
 var reader *read.Reader = read.NewReader()

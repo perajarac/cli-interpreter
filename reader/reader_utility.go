@@ -7,7 +7,7 @@ import (
 	stdTime "time"
 	"unicode/utf8"
 
-	"github.com/perajarac/cli_interpreter/file"
+	"github.com/perajarac/cli-interpreter/file"
 )
 
 const Ver = "1.0.2"

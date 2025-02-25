@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/perajarac/cli_interpreter/memory"
+	"github.com/perajarac/cli-interpreter/memory"
 )
 
 type Reader struct {

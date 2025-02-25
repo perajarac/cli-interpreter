@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	f "github.com/perajarac/cli_interpreter/file"
-	r "github.com/perajarac/cli_interpreter/reader"
+	f "github.com/perajarac/cli-interpreter/file"
+	r "github.com/perajarac/cli-interpreter/reader"
 )
 
 var reader_test *r.Reader = r.NewReader()
