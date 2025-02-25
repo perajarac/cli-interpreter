@@ -1,12 +1,13 @@
 package reader
 
 import (
-	"cli_interpreter/file"
 	"fmt"
 	"regexp"
 	"strings"
 	stdTime "time"
 	"unicode/utf8"
+
+	"github.com/perajarac/cli_interpreter/file"
 )
 
 const Ver = "1.0.2"

@@ -2,11 +2,12 @@ package reader
 
 import (
 	"bufio"
-	"cli_interpreter/memory"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/perajarac/cli_interpreter/memory"
 )
 
 type Reader struct {

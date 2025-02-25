@@ -39,10 +39,12 @@ This project served as a learning exercise to:
 2. Build the project (if applicable):
 
    ```bash
-   go build main.go  # Example for Go
+   go run main.go  # Example for Go
    ```
 
 3. Start typing commands in the CLI.
+
+4. API usage is given in main.go function.
 
 ---
 

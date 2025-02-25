@@ -1,10 +1,11 @@
 package main
 
 import (
-	f "cli_interpreter/file"
-	r "cli_interpreter/reader"
 	"strings"
 	"testing"
+
+	f "github.com/perajarac/cli_interpreter/file"
+	r "github.com/perajarac/cli_interpreter/reader"
 )
 
 var reader_test *r.Reader = r.NewReader()
@@ -74,8 +75,8 @@ func TestValidateCLI(t *testing.T) {
 		{"tr \"Bleja je lepa\" \"lepa\" \"bleja\"", nil, "Bleja je bleja"},
 		{"help", nil, helpText},
 		{"version", nil, r.Ver},
-		{"version | tr \".\"", nil, "101"},
-		{"version | echo", nil, "1.0.1"},
+		{"version | tr \".\"", nil, "102"},
+		{"version | echo", nil, "1.0.2"},
 		{"echo \"hello\" | wc -w | tr \"1\" \"one\"", nil, "one"},
 		{"echo \"hello world\" | wc -c | tr \"11\" \"eleven\"", nil, "eleven"},
 		{"echo \"sample text\" | tr \"sample\" \"example\" | wc -w", nil, "2"},
