@@ -9,7 +9,7 @@ import (
 	"github.com/perajarac/cli-interpreter/file"
 )
 
-const Ver = "1.0.2"
+const Ver = "1.0.3"
 
 type Command struct {
 	words  []string

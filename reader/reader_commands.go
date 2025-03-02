@@ -90,27 +90,28 @@ func Help(sentence string) string {
 	
 	4. date
 	   - Outputs the current system date.
+
+	5. cat
+		- Shows file content on terminal or write it in given file
 	
-	5. touch [filename]
+	6. touch [filename]
 	   - Creates an empty file with the specified filename in the current directory.
 		 Outputs an error message if the file already exists.
 	
-	6. truncate [filename]
+	7. truncate [filename]
 	   - Deletes the content of the specified file in the current directory.
 	
-	7. rm [filename]
+	8. rm [filename]
 	   - Removes the specified file from the file system in the current directory.
 	
-	8. wc -opt [argument]
+	9. wc -opt [argument]
 	   - Counts words or characters in the input text based on the option.
 		 -w for words, -c for characters.
 	
-	9. tr [argument] what [with]
+	10. tr [argument] what [with]
 	   - Replaces all occurrences of the string 'what' with the string 'with' in the input text.
 		 If 'with' is not specified, 'what' will be removed.
 	
-	10. head -ncount [argument]
-		- Outputs the first 'count' lines of the input text.
 	
 	11. batch [argument]
 		- Interprets multiple command lines from the input as if they were entered one by one in the terminal.
