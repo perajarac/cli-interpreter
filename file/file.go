@@ -6,6 +6,8 @@ import (
 )
 
 func HandleTouch(file_name string) error {
+	os.Chdir(userFilesDir)
+	defer os.Chdir("..") //back to normal(necessay for cleanup)
 	var exists bool = doesFileExists(file_name)
 
 	if exists {

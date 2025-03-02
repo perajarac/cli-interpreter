@@ -1,10 +1,13 @@
 package file
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+const userFilesDir = "userFiles"
 
 var forbbiden_extensions []string = []string{".go", ".exe", ".dll", ".sh", ".md"}
 
@@ -29,7 +32,7 @@ func readFromFile(fileName string) (string, error) {
 }
 
 func WriteOutput(outputFile string, fileContent string) error {
-	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return ErrCannotCreateFile
 	}
@@ -82,4 +85,28 @@ func RemoveAtIndex(s []string, i int) []string {
 		return s
 	}
 	return append(s[:i], s[i+1:]...)
+}
+
+func EnsureUserFilesDir() error {
+	fmt.Println("here")
+	absPath, err := filepath.Abs(userFilesDir)
+	if err != nil {
+		return err
+	}
+	// MkdirAll creates the directory along with any missing parents.
+	// It does nothing if the directory already exists.
+	if err := os.MkdirAll(absPath, 0700); err != nil {
+		emkd := NewEmkdir(absPath, err)
+		return emkd
+	}
+	return nil
+}
+
+func Clear() error {
+	if err := os.RemoveAll(userFilesDir); err != nil {
+		emkd := NewEmkdir(userFilesDir, err)
+		return emkd
+	}
+
+	return nil
 }

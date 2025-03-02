@@ -38,7 +38,6 @@ func (r *Reader) MainLoop() {
 	if ret != "" {
 		fmt.Println(ret)
 	}
-	r.Clear()
 }
 
 func (r *Reader) RunCommand(cmd string) (string, error) {
