@@ -55,6 +55,8 @@ const helpText string = `Available commands:
 		- Displays the version of the program.`
 
 func TestValidateCLI(t *testing.T) {
+	r.SetUpUser()
+	defer reader_test.Clear()
 	tests := []struct {
 		command  string
 		wantErr  error

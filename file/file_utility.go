@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -88,7 +87,6 @@ func RemoveAtIndex(s []string, i int) []string {
 }
 
 func EnsureUserFilesDir() error {
-	fmt.Println("here")
 	absPath, err := filepath.Abs(userFilesDir)
 	if err != nil {
 		return err
@@ -99,14 +97,16 @@ func EnsureUserFilesDir() error {
 		emkd := NewEmkdir(absPath, err)
 		return emkd
 	}
+	// Move all user operations to that folder
+	os.Chdir(userFilesDir)
 	return nil
 }
 
 func Clear() error {
+	os.Chdir("..") //back to main directory(necessary for cleanup)
 	if err := os.RemoveAll(userFilesDir); err != nil {
 		emkd := NewEmkdir(userFilesDir, err)
 		return emkd
 	}
-
 	return nil
 }
